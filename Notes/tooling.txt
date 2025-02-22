@@ -3,3 +3,5 @@ Tooling for GUI in rust:
 
 Music player tooling:
 - https://rust.audio/
+
+OG article: https://zerotomastery.io/blog/rust-practice-projects/ (#12)
