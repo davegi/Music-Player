@@ -1,0 +1,5 @@
+Tooling for GUI in rust:
+- https://crates.io/crates/egui
+
+Music player tooling:
+- https://rust.audio/
