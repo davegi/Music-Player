@@ -1,4 +1,9 @@
 use eframe::egui;
+use eframe::egui::{Color32, Pos2, Vec2};
+mod colors;
+mod egui_utils; // Import colors module
+
+use colors::theme::BACKGROUND;
 
 struct MyApp {
     clicked: bool,
@@ -12,29 +17,48 @@ impl Default for MyApp {
 
 impl eframe::App for MyApp {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
-        egui::CentralPanel::default().show(ctx, |ui| {
-            let screen_size = ctx.screen_rect().size();
-            let middle = egui::vec2(screen_size.x / 2.0, screen_size.y / 2.0);
+        egui::CentralPanel::default()
+            .frame(egui::Frame::default().fill(*BACKGROUND))
+            .show(ctx, |ui| {
+                let painter = ui.painter();
 
-            let rect = egui::Rect::from_min_size(
-                egui::pos2(middle.x - 100.0, middle.y - 250.0),
-                egui::vec2(200.0, 40.0),
-            );
+                // Use EguiUtils to draw elements
+                egui_utils::EguiUtils::draw_text(
+                    ui,
+                    painter,
+                    "Hello, egui!",
+                    Pos2::new(100.0, 50.0),
+                    Color32::WHITE,
+                );
+                egui_utils::EguiUtils::draw_rect(
+                    painter,
+                    Pos2::new(150.0, 100.0),
+                    Vec2::new(200.0, 100.0),
+                    Color32::RED,
+                );
+                egui_utils::EguiUtils::draw_circle(
+                    painter,
+                    Pos2::new(300.0, 300.0),
+                    50.0,
+                    Color32::BLUE,
+                );
+                egui_utils::EguiUtils::draw_line(
+                    painter,
+                    Pos2::new(100.0, 400.0),
+                    Pos2::new(400.0, 400.0),
+                    2.0,
+                    Color32::GREEN,
+                );
 
-            ui.put(
-                rect,
-                egui::Label::new(egui::RichText::new("TODO List:").heading()),
-            );
+                if ui.button("Click Me!").clicked() {
+                    self.clicked = !self.clicked;
+                }
 
-            if ui.button("Click Me!").clicked() {
-                self.clicked = !self.clicked;
-            }
-
-            if self.clicked {
-                println!("Button Clicked!");
-                self.clicked = false;
-            }
-        });
+                if self.clicked {
+                    println!("Button Clicked!");
+                    self.clicked = false;
+                }
+            });
     }
 }
 
