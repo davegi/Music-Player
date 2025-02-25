@@ -1,5 +1,3 @@
-use std::sync::Arc;
-
 use eframe::egui::{Align2, Color32, Context, FontId, Pos2, Rect, Ui};
 
 /// Trait for drawable objects in egui.
