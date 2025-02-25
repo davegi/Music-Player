@@ -1,75 +1,52 @@
-use eframe::egui;
-use eframe::egui::{Color32, Pos2, Vec2};
 mod colors;
-mod egui_utils; // Import colors module
+mod controller;
+mod egui_utils;
+mod list_item;
+mod todo_list;
 
-use colors::theme::BACKGROUND;
+use crate::colors::theme;
+use crate::egui_utils::{Drawable, Scene, Updatable};
+use crate::todo_list::TodoList;
+use controller::Controller;
 
-struct MyApp {
-    clicked: bool,
+use eframe::egui::{self, CentralPanel, Context, Frame};
+
+pub struct MyApp {
+    scene: Scene,
 }
 
-impl Default for MyApp {
-    fn default() -> Self {
-        Self { clicked: false }
+impl MyApp {
+    pub fn new() -> Self {
+        let mut scene = Scene::new();
+
+        let mut controller = Controller::new(TodoList::new("Todo List:".to_string()));
+
+        controller.add("Buy Milk".to_string());
+        controller.add("Buy eggs".to_string());
+
+        scene.add(controller);
+
+        Self { scene }
     }
 }
 
 impl eframe::App for MyApp {
-    fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
-        egui::CentralPanel::default()
-            .frame(egui::Frame::default().fill(*BACKGROUND))
+    fn update(&mut self, ctx: &Context, _frame: &mut eframe::Frame) {
+        self.scene.update(ctx);
+        CentralPanel::default()
+            .frame(Frame::none().fill(*theme::BACKGROUND)) // Use background color
             .show(ctx, |ui| {
-                let painter = ui.painter();
-
-                // Use EguiUtils to draw elements
-                egui_utils::EguiUtils::draw_text(
-                    ui,
-                    painter,
-                    "Hello, egui!",
-                    Pos2::new(100.0, 50.0),
-                    Color32::WHITE,
-                );
-                egui_utils::EguiUtils::draw_rect(
-                    painter,
-                    Pos2::new(150.0, 100.0),
-                    Vec2::new(200.0, 100.0),
-                    Color32::RED,
-                );
-                egui_utils::EguiUtils::draw_circle(
-                    painter,
-                    Pos2::new(300.0, 300.0),
-                    50.0,
-                    Color32::BLUE,
-                );
-                egui_utils::EguiUtils::draw_line(
-                    painter,
-                    Pos2::new(100.0, 400.0),
-                    Pos2::new(400.0, 400.0),
-                    2.0,
-                    Color32::GREEN,
-                );
-
-                if ui.button("Click Me!").clicked() {
-                    self.clicked = !self.clicked;
-                }
-
-                if self.clicked {
-                    println!("Button Clicked!");
-                    self.clicked = false;
-                }
+                self.scene.draw(ui); // Ensure draw is correctly called here
             });
     }
 }
 
-fn main() -> Result<(), eframe::Error> {
-    let options = eframe::NativeOptions {
-        viewport: egui::ViewportBuilder::default().with_inner_size([800.0, 600.0]),
-        ..Default::default()
-    };
+fn main() {
+    let native_options = eframe::NativeOptions::default();
     eframe::run_native(
-        "My egui App",
-        options,
-        Box::new(|_cc| Box::new(MyApp::default())),
+        "Todo List App", // Window title
+        native_options,
+        Box::new(|_cc| Box::new(MyApp::new())), // Proper closure format
     )
+    .expect("Failed to start application");
 }
