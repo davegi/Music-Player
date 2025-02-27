@@ -51,6 +51,7 @@ impl TextLabel {
 }
 
 /// Manages a collection of drawable and updatable objects.
+///TODO: Split into two lists, one Drawable one Updatable
 pub struct Scene {
     objects: Vec<Box<dyn DrawableAndUpdatable>>,
 }
