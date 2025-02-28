@@ -13,7 +13,7 @@ impl MusicController {
         Self { sink }
     }
 
-    pub fn load_and_play(&self, file_path: &str) {
+    pub fn play(&self, file_path: &str) {
         let file = BufReader::new(File::open(file_path).unwrap());
         let source = Decoder::new(file).unwrap();
         self.sink.append(source);
