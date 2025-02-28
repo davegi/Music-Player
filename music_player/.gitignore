@@ -1,0 +1,54 @@
+# Ignore the target directory (build artifacts)
+target/
+
+# Ignore debug and release build directories
+debug/
+release/
+
+# Ignore Cargo.lock for libraries (keep it for binaries)
+Cargo.lock
+
+# Ignore Rust build-related files
+**/*.rs.bk
+**/*.rmeta
+
+# Ignore rustup, cargo, and clippy cache
+.cargo/
+rustup/
+
+# Ignore generated documentation
+target/doc/
+
+# Ignore IDE/editor-specific files
+/.idea/
+/.vscode/
+/*.iml
+
+# Ignore backup files
+*~ 
+*.swp 
+*.swo 
+
+# Ignore log and temporary files
+/logs/
+*.log
+*.tmp
+*.bak
+
+# Ignore system files
+.DS_Store
+Thumbs.db
+
+# Ignore binary files and executables
+*.exe
+*.dll
+*.dylib
+*.so
+*.a
+*.o
+
+# Ignore compiled WASM files (if using egui with WASM)
+*.wasm
+wasm_target/
+pkg/
+dist/

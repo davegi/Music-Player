@@ -1,8 +1,0 @@
-[package]
-name = "egui-example"
-version = "0.1.0"
-edition = "2021"
-
-[dependencies]
-eframe = "0.27" # Adjust the version based on the latest release
-once_cell = "1.20.3"

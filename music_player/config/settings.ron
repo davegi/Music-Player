@@ -1,0 +1,5 @@
+(
+    volume: 0.8,
+    theme: "dark",
+    music_directory: "music_library/",
+)

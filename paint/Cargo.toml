@@ -1,9 +1,0 @@
-[package]
-name = "egui-macroquad-ex"
-version = "0.1.0"
-edition = "2024"
-
-[dependencies]
-macroquad = "0.3.26"
-egui-macroquad = "0.15"
-
