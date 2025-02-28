@@ -1,7 +1,38 @@
-Tooling for GUI in rust:
-- https://crates.io/crates/egui
+|------------------------------------------------------------------------|
 
-Music player tooling:
-- https://rust.audio/
+GUI Tooling:
+    egui:
+        - https://docs.rs/egui/latest/egui/
+        - https://www.egui.rs/#demo
 
-OG article: https://zerotomastery.io/blog/rust-practice-projects/ (#12)
+    macroquad:
+        - https://docs.rs/macroquad/latest/macroquad/
+        - https://macroquad.rs/examples/
+
+    egui-macroquad:
+        - https://github.com/optozorax/egui-macroquad
+
+|------------------------------------------------------------------------|
+
+Audi Tooling (https://rust.audio/):
+    rodio:
+        - https://docs.rs/rodio/latest/rodio/
+        - https://github.com/RustAudio/rodio
+
+    symphonia:
+        - https://docs.rs/symphonia/latest/symphonia/
+        - https://github.com/pdeljanov/Symphonia
+
+|------------------------------------------------------------------------|
+
+Metadata Tooling:
+    lofty:
+        - https://docs.rs/lofty/latest/lofty/
+        - https://github.com/Serial-ATA/lofty-rs
+
+|------------------------------------------------------------------------|
+
+Data Storage Tooling:
+    rusqlite:
+        - https://docs.rs/rusqlite/latest/rusqlite/
+        - https://github.com/rusqlite/rusqlite
