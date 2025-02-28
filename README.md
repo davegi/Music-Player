@@ -1,11 +1,9 @@
-# 🎵 Music Visualizer 1.0 - Pure Rust
+# 🎵 Music Visualizer 1.0 - Pure Rust 🎵
 
 This project is a feature-rich **Rust Music Visualizer** with a strict **Model-View-Controller (MVC)** architecture. It consists of:
 
 - 🎶 **Music Controller** – Handles audio playback, playlists, and metadata.
 - 🎨 **Visual Component** – Generates psychedelic visuals that react to the music.
-
-Built with **egui**, **macroquad**, and **egui-macroquad** for the GUI.
 
 ---
 
