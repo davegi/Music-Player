@@ -1,58 +1,51 @@
-mod audio;
+mod controller;
 mod simple_menu;
+mod song;
 
-use audio::Audio;
-use simple_menu::SimpleMenu;
+use controller::Controller;
 
 use eframe::NativeOptions;
 use eframe::egui;
 use egui::ViewportBuilder;
 
+/// Main application structure that manages audio playback.
 struct MyApp {
-    audio: Audio,
+    controller: Controller,
 }
 
 impl MyApp {
-    fn new(song_name: &str) -> Self {
+    /// Creates a new `MyApp` instance with the selected song.
+    ///
+    /// # Arguments
+    /// * `song_name` - The name of the song to load and play.
+    fn new() -> Self {
         Self {
-            audio: Audio::new(&format!("music_library/{}.mp3", song_name)),
+            controller: Controller::new(),
         }
     }
 }
 
+/// Implements the GUI application using `eframe`.
 impl eframe::App for MyApp {
+    /// Updates the UI and handles button interactions for playback control.
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
-        egui::CentralPanel::default().show(ctx, |ui| {
-            ui.vertical_centered(|ui| {
-                if self.audio.status().is_paused {
-                    if ui.button("Play").clicked() {
-                        self.audio.play();
-                    }
-                } else {
-                    if ui.button("Pause").clicked() {
-                        self.audio.pause();
-                    }
-                }
-            });
-        });
+        self.controller.update(ctx);
     }
 }
 
+/// Entry point of the application.
 fn main() {
-    //TODO: try and find a way to add the menu to the app
-    let menu = SimpleMenu::new();
-
-    let song_name = menu.pick_song().trim().to_lowercase();
-
+    // Define the window options for the application.
     let options = NativeOptions {
-        viewport: ViewportBuilder::default().with_inner_size([150.0, 100.0]), // Correct way to set window size
+        viewport: ViewportBuilder::default().with_inner_size([150.0, 100.0]),
         ..Default::default()
     };
 
+    // Run the `eframe` application with the selected song.
     eframe::run_native(
         "Audio Player",
         options,
-        Box::new(|_cc| Ok(Box::new(MyApp::new(&song_name)))),
+        Box::new(|_cc| Ok(Box::new(MyApp::new()))),
     )
     .unwrap();
 }
