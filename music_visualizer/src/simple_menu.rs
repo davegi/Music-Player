@@ -91,7 +91,7 @@ impl SimpleMenu {
     /// * `song` - The current song to control its playback status.
     fn render_play_pause_button(ui: &mut egui::Ui, song: &mut Song) {
         // Determine the text for the button based on the song's current status.
-        let button_text = if song.status().is_paused {
+        let button_text = if song.status() {
             "▶ Play"
         } else {
             "⏸ Pause"
@@ -102,7 +102,7 @@ impl SimpleMenu {
 
         // If the button is clicked, toggle the song's playback state.
         if play_pause_button.clicked() {
-            if song.status().is_paused {
+            if song.status() {
                 song.play();
             } else {
                 song.pause();

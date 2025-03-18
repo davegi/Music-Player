@@ -1,13 +1,9 @@
-use rodio::{Decoder, OutputStream, Sink};
+use hound;
+use rodio::{OutputStream, Sink, Source, buffer::SamplesBuffer};
 use std::fs::File;
 use std::io::BufReader;
+use std::time::Duration;
 
-/// Represents the status of a song, indicating whether it is paused.
-pub struct SongStatus {
-    pub is_paused: bool,
-}
-
-/// Manages audio playback using the `rodio` library.
 pub struct Song {
     pub name: String,
     _stream: OutputStream, // Keeps the audio stream alive
@@ -15,59 +11,44 @@ pub struct Song {
 }
 
 impl Song {
-    /// Creates a new `Song` instance and loads an audio file.
-    ///
-    /// # Arguments
-    /// * `song_file_path` - Path to the audio file to be played.
-    ///
-    /// # Panics
-    /// * If the song file cannot be opened or decoded.
     pub fn new(song_file_path: &str) -> Self {
-        // Create an output audio stream and its associated handle
         let (stream, stream_handle) = OutputStream::try_default().unwrap();
-
-        // Create a sink (audio controller) linked to the stream handle
         let sink = Sink::try_new(&stream_handle).unwrap();
 
-        // Try opening the specified audio file and provide more context on failure
-        let file =
-            File::open(format!("music_library/{}.mp3", song_file_path)).unwrap_or_else(|_| {
-                panic!(
-                    "Failed to open file at path: music_library/{}.mp3",
-                    song_file_path
-                );
-            });
+        let file_path = format!("music_library/{}.wav", song_file_path);
+        let reader = hound::WavReader::open(&file_path)
+            .expect(&format!("Failed to open WAV file: {}", file_path));
 
-        // Decode the audio file into a source format suitable for playback
-        let source = Decoder::new(BufReader::new(file)).expect("Failed to decode audio");
+        let spec = reader.spec();
+        if spec.sample_format != hound::SampleFormat::Int {
+            panic!("Unsupported WAV format: only PCM integer WAV files are supported.");
+        }
 
-        // Append the decoded audio source to the sink for playback
+        let samples: Vec<f32> = reader
+            .into_samples::<i16>()
+            .map(|s| s.unwrap() as f32 / i16::MAX as f32)
+            .collect();
+
+        let source = SamplesBuffer::new(spec.channels as u16, spec.sample_rate, samples).buffered(); // Buffered source for continuous playback
+
         sink.append(source);
 
         Self {
             name: song_file_path.to_string(),
-            _stream: stream, // Keep the stream alive to prevent audio cutoff
+            _stream: stream,
             sink,
         }
     }
 
-    /// Starts or resumes audio playback.
     pub fn play(&mut self) {
         self.sink.play();
     }
 
-    /// Pauses audio playback.
     pub fn pause(&mut self) {
         self.sink.pause();
     }
 
-    /// Retrieves the current playback status.
-    ///
-    /// # Returns
-    /// A `SongStatus` struct indicating whether the song is paused.
-    pub fn status(&self) -> SongStatus {
-        SongStatus {
-            is_paused: self.sink.is_paused(),
-        }
+    pub fn status(&self) -> bool {
+        self.sink.is_paused()
     }
 }
