@@ -37,7 +37,7 @@ impl eframe::App for MyApp {
 fn main() {
     // Define the window options for the application.
     let options = NativeOptions {
-        viewport: ViewportBuilder::default().with_inner_size([150.0, 100.0]),
+        viewport: ViewportBuilder::default().with_inner_size([300.0, 450.0]),
         ..Default::default()
     };
 

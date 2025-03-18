@@ -1,75 +1,67 @@
 use crate::simple_menu::SimpleMenu;
 use crate::song::Song;
-
 use eframe::egui;
 
-//TODO: Move most egui menu type code into simple menu (Make update much smaller just a overall controller)
-
-/// A controller for managing a song's playback and menu interactions.
+/// A controller for managing song playback and menu interactions.
 ///
-/// The `Controller` struct manages the state of a song, its playback status,
-/// and the selection of songs from the menu.
+/// The `Controller` is responsible for handling the UI state between
+/// the song selection menu and the playback screen. It interacts with
+/// [`SimpleMenu`] to allow users to select a song and control playback.
 pub struct Controller {
-    /// The currently selected song. This is an `Option<Song>`, so it can be `None`
-    /// if no song is selected, or `Some(Song)` when a song is active.
+    /// The currently selected song.
+    ///
+    /// This will be `None` when no song is selected. Once a song is chosen
+    /// from the selection screen, it is stored as `Some(Song)`. If the user
+    /// returns to the selection screen, it is set back to `None`.
     pub song: Option<Song>,
 
-    /// The menu used to select a song.
+    /// The menu for selecting a song and managing playback.
+    ///
+    /// This instance of [`SimpleMenu`] handles all user interactions related to
+    /// song selection and playback controls.
     pub menu: SimpleMenu,
 }
 
 impl Controller {
     /// Creates a new `Controller` instance with no song selected.
     ///
-    /// Initializes the `Controller` with the song set to `None` and a new `SimpleMenu`.
+    /// Initializes the `SimpleMenu` for song selection and playback control.
     ///
     /// # Returns
-    /// A new `Controller` instance.
+    ///
+    /// A new instance of `Controller` with an empty song selection.
     pub fn new() -> Self {
         Self {
-            song: None,
+            song: None, // No song selected at startup
             menu: SimpleMenu::new(),
         }
     }
 
-    /// Updates the controller's state and renders the UI.
+    /// Updates the UI state and handles user interactions.
     ///
-    /// This method checks if a song has been selected. If no song is selected, it
-    /// shows a song selection menu. If a song is selected, it will show either a
-    /// "Play" or "Pause" button depending on the song's playback status.
+    /// This function determines whether the song selection screen or the playback
+    /// screen should be displayed. If no song is selected, it presents the song
+    /// selection menu. If a song is selected, it switches to the playback screen.
+    ///
+    /// If the user presses the "Back to Song Selection" button while in the
+    /// playback screen, the selected song is cleared, and the UI returns to
+    /// the song selection menu.
     ///
     /// # Arguments
-    /// * `ctx` - The context for rendering the UI, provided by `eframe::egui`.
+    ///
+    /// * `ctx` - The [`egui::Context`] that provides the UI state for rendering.
     pub fn update(&mut self, ctx: &egui::Context) {
         if self.song.is_none() {
-            // No song is selected, show the song selection menu
-            egui::CentralPanel::default().show(ctx, |ui| {
-                ui.heading("Select a song");
-                if let Some(selected_song) = self.menu.show(ui) {
-                    self.song = Some(Song::new(&selected_song));
-                }
-            });
+            // Display song selection screen and update `song` if one is selected
+            self.song = self.menu.show_song_selection_screen(ctx, self.song.take());
         } else {
-            // A song is selected, show the Play/Pause button
-            egui::CentralPanel::default().show(ctx, |ui| {
-                if let Some(song) = &self.song {
-                    if song.status().is_paused {
-                        // If the song is paused, show the Play button
-                        if ui.button("Play").clicked() {
-                            if let Some(song) = &mut self.song {
-                                song.play();
-                            }
-                        }
-                    } else {
-                        // If the song is playing, show the Pause button
-                        if ui.button("Pause").clicked() {
-                            if let Some(song) = &mut self.song {
-                                song.pause();
-                            }
-                        }
-                    }
-                }
-            });
+            // Display playback screen; if "Back" is pressed, return to selection
+            if self
+                .menu
+                .show_play_pause_screen(ctx, self.song.as_mut().unwrap())
+            {
+                self.song = None; // Reset to selection screen
+            }
         }
     }
 }

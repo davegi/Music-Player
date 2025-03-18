@@ -9,6 +9,7 @@ pub struct SongStatus {
 
 /// Manages audio playback using the `rodio` library.
 pub struct Song {
+    pub name: String,
     _stream: OutputStream, // Keeps the audio stream alive
     pub sink: Sink,        // Controls playback operations
 }
@@ -44,6 +45,7 @@ impl Song {
         sink.append(source);
 
         Self {
+            name: song_file_path.to_string(),
             _stream: stream, // Keep the stream alive to prevent audio cutoff
             sink,
         }
