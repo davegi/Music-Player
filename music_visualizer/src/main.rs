@@ -1,51 +1,20 @@
-mod controller;
-mod simple_menu;
-mod song;
+use egui_macroquad::Egui;
+use macroquad::prelude::*;
 
-use controller::Controller;
+#[macroquad::main("Test App")]
+async fn main() {
+    let mut egui = Egui::new();
 
-use eframe::NativeOptions;
-use eframe::egui;
-use egui::ViewportBuilder;
+    loop {
+        clear_background(BLACK);
 
-/// Main application structure that manages audio playback.
-struct MyApp {
-    controller: Controller,
-}
+        egui.run(|ctx| {
+            egui::CentralPanel::default().show(ctx, |ui| {
+                ui.heading("Test App");
+            });
+        });
 
-impl MyApp {
-    /// Creates a new `MyApp` instance with the selected song.
-    ///
-    /// # Arguments
-    /// * `song_name` - The name of the song to load and play.
-    fn new() -> Self {
-        Self {
-            controller: Controller::new(),
-        }
+        egui.draw();
+        next_frame().await;
     }
-}
-
-/// Implements the GUI application using `eframe`.
-impl eframe::App for MyApp {
-    /// Updates the UI and handles button interactions for playback control.
-    fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
-        self.controller.update(ctx);
-    }
-}
-
-/// Entry point of the application.
-fn main() {
-    // Define the window options for the application.
-    let options = NativeOptions {
-        viewport: ViewportBuilder::default().with_inner_size([300.0, 450.0]),
-        ..Default::default()
-    };
-
-    // Run the `eframe` application with the selected song.
-    eframe::run_native(
-        "Audio Player",
-        options,
-        Box::new(|_cc| Ok(Box::new(MyApp::new()))),
-    )
-    .unwrap();
 }
