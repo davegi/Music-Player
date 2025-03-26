@@ -1,48 +1,115 @@
-use crate::menu::Menu;
-use crate::view::View;
-use macroquad::prelude::*;
-use std::sync::{Arc, Mutex};
+//! The application controller module
+//!
+//! Manages the coordination between all application components:
+//! - View (visual display)
+//! - Menu (user interface)
+//! - Song (audio playback)
+//!
+//! Handles layout, updates, and rendering of the complete application.
 
-/// The `Controller` struct manages the main game loop and interactions between
-/// the UI (`Menu`) and the game state (`View`).
+use crate::{menu::Menu, song::Song, view::View};
+use nannou::prelude::*;
+
+/// Main application controller that orchestrates all components
+///
+/// Responsible for:
+/// - Managing the layout of UI elements
+/// - Coordinating updates between components
+/// - Handling the overall rendering pipeline
 pub struct Controller {
-    /// Shared reference to the `View`, allowing UI elements to modify it safely.
-    view: Arc<Mutex<View>>,
-    /// The `Menu` responsible for UI interactions.
+    /// Handles the main visualization display
+    view: View,
+    /// Manages the user interface and controls
     menu: Menu,
+    /// Handles audio playback and state
+    song: Song,
+    /// Stores the main window dimensions
+    window_rect: Rect,
 }
 
 impl Controller {
-    /// Creates a new `Controller` instance, initializing the game state (`View`)
-    /// and linking it to the `Menu`.
-    pub fn new() -> Self {
-        let view = Arc::new(Mutex::new(View::new())); // Create shared game state
-        let menu = Menu::new(view.clone()); // Pass shared state to the UI
+    /// Creates a new Controller with proper layout initialization
+    ///
+    /// # Arguments
+    /// * `win_rect` - The dimensions of the application window
+    ///
+    /// # Layout
+    /// - Menu takes up 200px on the right side
+    /// - View occupies remaining space on the left
+    /// - A divider line separates the two sections
+    pub fn new(win_rect: Rect) -> Self {
+        let menu_width = 200.0;
+        let menu_rect = Rect::from_x_y_w_h(
+            win_rect.right() - menu_width / 2.0,
+            win_rect.y(),
+            menu_width,
+            win_rect.h(),
+        );
 
-        Self { view, menu }
+        let view_rect = Rect::from_x_y_w_h(
+            win_rect.left() + (win_rect.w() - menu_width) / 2.0,
+            win_rect.y(),
+            win_rect.w() - menu_width,
+            win_rect.h(),
+        );
+
+        Controller {
+            view: View::new(view_rect),
+            menu: Menu::new(menu_rect),
+            song: Song::new(),
+            window_rect: win_rect,
+        }
     }
 
-    /// Runs the main game loop, handling updates, rendering, and UI interactions.
-    pub async fn run(&mut self) {
-        loop {
-            // Clear the screen before rendering the next frame
-            clear_background(BLACK);
+    /// Updates all application components
+    ///
+    /// Called once per frame to:
+    /// 1. Update menu state based on user input
+    /// 2. Update song playback based on menu state
+    /// 3. Update view based on playback state
+    ///
+    /// # Arguments
+    /// * `app` - Reference to the Nannou application for input handling
+    pub fn update(&mut self, app: &App) {
+        self.menu.update(app);
+        self.song.update(self.menu.is_playing());
+        self.view.update(self.song.is_playing());
+    }
 
-            // Lock the `View` state to safely update and draw the game elements
-            {
-                let mut view = self.view.lock().unwrap();
-                view.update(); // Update game logic
-                view.draw(); // Render game elements
-            }
+    /// Renders all application components
+    ///
+    /// Draws the complete application interface including:
+    /// - Background
+    /// - View visualization
+    /// - Menu controls
+    /// - Divider line
+    ///
+    /// # Arguments
+    /// * `app` - Reference to the Nannou application
+    /// * `frame` - The target frame for rendering
+    pub fn view(&self, app: &App, frame: Frame) {
+        let draw = app.draw();
 
-            // Update the UI menu
-            self.menu.update();
+        // Clear the background
+        draw.background().color(BLACK);
 
-            // Render the Egui UI components
-            egui_macroquad::draw();
+        // Draw view and menu
+        self.view.draw(&draw);
+        self.menu.draw(&draw);
 
-            // Proceed to the next frame
-            next_frame().await;
-        }
+        // Draw divider line between view and menu
+        draw.line()
+            .start(pt2(
+                self.window_rect.right() - 200.0,
+                self.window_rect.top(),
+            ))
+            .end(pt2(
+                self.window_rect.right() - 200.0,
+                self.window_rect.bottom(),
+            ))
+            .color(WHITE)
+            .weight(1.0);
+
+        draw.to_frame(app, &frame).unwrap();
     }
 }

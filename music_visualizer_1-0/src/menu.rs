@@ -1,54 +1,136 @@
-use egui_macroquad::egui::{Button, Window};
-use macroquad::prelude::*;
-use std::sync::{Arc, Mutex};
+//! User interface menu module
+//!
+//! Handles the interactive control panel for the application, including:
+//! - Play/pause button
+//! - Menu layout and rendering
+//! - Mouse interaction handling
+//!
+//! The menu provides visual feedback and translates user input into playback commands.
 
-use crate::view::View;
+use nannou::prelude::*;
 
-/// The `Menu` struct manages the UI overlay using `egui_macroquad`.
-/// It allows user interaction with the playback controls.
+/// Represents the interactive control menu
+///
+/// Manages:
+/// - Playback state tracking
+/// - Button layout and rendering
+/// - Mouse interaction handling
+/// - Visual feedback
 pub struct Menu {
-    /// Shared reference to the `View`, allowing UI elements to modify it safely.
-    view: Arc<Mutex<View>>,
+    /// Current playback state (true when audio is playing)
+    is_playing: bool,
+    /// Rectangle defining the play/pause button bounds
+    play_button: Rect,
+    /// Rectangle defining the entire menu area
+    menu_rect: Rect,
+    /// Collection of all interactive buttons
+    buttons: Vec<Rect>,
+    /// Tracks mouse state from previous frame for click detection
+    was_mouse_pressed: bool,
 }
 
 impl Menu {
-    /// Creates a new `Menu` instance, linking it to the shared `View` state.
+    /// Creates a new Menu with default layout
     ///
     /// # Arguments
+    /// * `menu_rect` - The bounding rectangle for the entire menu panel
     ///
-    /// * `view` - A thread-safe, shared reference to the `View` instance.
-    pub fn new(view: Arc<Mutex<View>>) -> Self {
-        Self { view }
+    /// # Layout
+    /// - Play/pause button is centered horizontally
+    /// - Button takes up 80% of menu width
+    /// - Positioned 30% down from top of menu
+    pub fn new(menu_rect: Rect) -> Self {
+        let button_height = 50.0;
+        let button_width = menu_rect.w() * 0.8;
+
+        let play_button = Rect::from_x_y_w_h(
+            menu_rect.x(),
+            menu_rect.y() + menu_rect.h() * 0.3,
+            button_width,
+            button_height,
+        );
+
+        Menu {
+            is_playing: false,
+            play_button,
+            menu_rect,
+            buttons: vec![play_button],
+            was_mouse_pressed: false,
+        }
     }
 
-    /// Updates the UI by rendering the control panel using `egui`.
-    /// This includes buttons to toggle playback state.
-    pub fn update(&mut self) {
-        // Start the Egui frame
-        egui_macroquad::ui(|egui_ctx| {
-            // Create a control panel window
-            Window::new("Controls")
-                .fixed_pos([10.0, 10.0]) // Position the window in the top-left corner
-                .resizable(false) // Make the window non-resizable
-                .title_bar(true) // Show the title bar
-                .show(egui_ctx, |ui| {
-                    // Lock the shared `View` for safe access
-                    let mut view = self.view.lock().unwrap();
+    /// Updates menu state based on user input
+    ///
+    /// Handles:
+    /// - Mouse position tracking
+    /// - Click detection (only triggers on new presses)
+    /// - Button state toggling
+    ///
+    /// # Arguments
+    /// * `app` - Reference to Nannou application for input access
+    pub fn update(&mut self, app: &App) {
+        let mouse = app.mouse.position();
+        let is_mouse_pressed = app.mouse.buttons.pressed().next().is_some();
 
-                    // Display a label for playback controls
-                    ui.label("Playback Controls:");
-
-                    // Add a button to toggle play/pause
-                    if view.is_paused {
-                        if ui.add(Button::new("▶ Play")).clicked() {
-                            view.is_paused = false; // Resume playback
-                        }
-                    } else {
-                        if ui.add(Button::new("⏸ Pause")).clicked() {
-                            view.is_paused = true; // Pause playback
-                        }
+        // Only trigger on new presses, not while holding
+        if is_mouse_pressed && !self.was_mouse_pressed {
+            for (i, button) in self.buttons.iter().enumerate() {
+                if button.contains(mouse) {
+                    match i {
+                        0 => self.is_playing = !self.is_playing,
+                        _ => {}
                     }
-                });
-        });
+                    break; // Only handle one button per click
+                }
+            }
+        }
+
+        self.was_mouse_pressed = is_mouse_pressed;
+    }
+
+    /// Renders the menu and all its components
+    ///
+    /// Draws:
+    /// - Menu background panel
+    /// - Play/pause button with state-appropriate color
+    /// - Button text label
+    /// - Menu title
+    ///
+    /// # Arguments
+    /// * `draw` - Nannou Draw context for rendering
+    pub fn draw(&self, draw: &Draw) {
+        // Draw menu background
+        draw.rect()
+            .xy(self.menu_rect.xy())
+            .wh(self.menu_rect.wh())
+            .color(rgb(0.1, 0.1, 0.1));
+
+        // Draw buttons with state-dependent color
+        let button_color = if self.is_playing { GREEN } else { RED };
+
+        draw.rect()
+            .xy(self.play_button.xy())
+            .wh(self.play_button.wh())
+            .color(button_color);
+
+        // Draw button text
+        draw.text(if self.is_playing { "PAUSE" } else { "PLAY" })
+            .xy(self.play_button.xy())
+            .color(BLACK)
+            .font_size(24);
+
+        // Draw menu title
+        draw.text("CONTROLS")
+            .xy(pt2(self.menu_rect.x(), self.menu_rect.top() - 30.0))
+            .color(WHITE)
+            .font_size(30);
+    }
+
+    /// Returns current playback state
+    ///
+    /// # Returns
+    /// `true` if audio should be playing, `false` if paused
+    pub fn is_playing(&self) -> bool {
+        self.is_playing
     }
 }

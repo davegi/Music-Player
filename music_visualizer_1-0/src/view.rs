@@ -1,43 +1,81 @@
-use macroquad::prelude::*;
+//! Visualization module
+//!
+//! Handles the main display area that shows playback status through:
+//! - Color changes (green for playing, red for paused)
+//! - Text status indicators
+//! - Responsive layout based on assigned rectangle
 
-/// The `View` struct represents the visual state of the application.
-/// It manages the background color and playback state.
+use nannou::prelude::*;
+
+/// Represents the main visualization view
+///
+/// Manages:
+/// - Playback state visualization
+/// - Display area dimensions
+/// - Visual feedback rendering
 pub struct View {
-    /// The current background color of the view.
-    pub color: Color,
-    /// A flag indicating whether playback is paused.
-    pub is_paused: bool,
+    /// Rectangle defining the view's bounds and position
+    view_rect: Rect,
+    /// Current playback state (true when audio is playing)
+    is_playing: bool,
 }
 
 impl View {
-    /// Creates a new `View` instance with default values.
+    /// Creates a new View with specified dimensions
     ///
-    /// # Returns
+    /// # Arguments
+    /// * `view_rect` - The bounding rectangle for the view area
     ///
-    /// A new `View` instance with a green background and playback unpaused.
-    pub fn new() -> Self {
-        Self {
-            color: GREEN, // Default color when not paused
-            is_paused: false,
+    /// Initializes with paused (red) state by default
+    pub fn new(view_rect: Rect) -> Self {
+        View {
+            view_rect,
+            is_playing: false,
         }
     }
 
-    /// Updates the view state based on the playback status.
-    /// If playback is paused, the background turns red; otherwise, it remains green.
-    pub fn update(&mut self) {
-        if self.is_paused {
-            self.color = RED; // Change color to red when paused
+    /// Updates the playback state
+    ///
+    /// # Arguments
+    /// * `is_playing` - New playback state (true for playing, false for paused)
+    ///
+    /// This affects both the background color and status text
+    pub fn update(&mut self, is_playing: bool) {
+        self.is_playing = is_playing;
+    }
+
+    /// Renders the visualization
+    ///
+    /// Draws:
+    /// - Background rectangle with state-appropriate color
+    ///   - Green with 80% opacity when playing
+    ///   - Red with 80% opacity when paused
+    /// - Centered status text
+    ///   - "PLAYING" when active
+    ///   - "PAUSED" when inactive
+    ///
+    /// # Arguments
+    /// * `draw` - Nannou Draw context for rendering
+    pub fn draw(&self, draw: &Draw) {
+        // Set color based on playback state
+        let bg_color = if self.is_playing {
+            rgba(0.0, 0.5, 0.0, 0.8) // Green when playing
         } else {
-            self.color = GREEN; // Change color to green when playing
-        }
-    }
+            rgba(0.5, 0.0, 0.0, 0.8) // Red when paused
+        };
 
-    /// Draws the view as a colored rectangle filling the screen.
-    pub fn draw(&self) {
-        const SCREEN_WIDTH: f32 = 600.0;
-        const SCREEN_HEIGHT: f32 = 600.0;
+        // Draw background
+        draw.rect()
+            .xy(self.view_rect.xy())
+            .wh(self.view_rect.wh())
+            .color(bg_color);
 
-        // Render a rectangle with the current background color
-        draw_rectangle(0.0, 0.0, SCREEN_WIDTH, SCREEN_HEIGHT, self.color);
+        // Add status text overlay
+        let status_text = if self.is_playing { "PLAYING" } else { "PAUSED" };
+
+        draw.text(status_text)
+            .xy(self.view_rect.xy())
+            .color(WHITE)
+            .font_size(48);
     }
 }
