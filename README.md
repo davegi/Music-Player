@@ -20,12 +20,12 @@ This project is a feature-rich **Rust Music Visualizer** with a strict **Model-V
 
 | Purpose               | Library        |
 |----------------------|--------------|
-| **Audio Playback**   | `rodio` |
+| **Audio Playback**   | `cpal` |
 | **Audio Decoding**   | `symphonia` |
-| **Metadata Parsing** | `lofty` |
-| **File Management**  | `std::fs`, `walkdir` |
-| **GUI**             | `egui`, `eframe`, `egui-macroquad` |
-| **Visual Effects**  | `macroquad`, `rustfft`, `dasp` |
-| **Storage**         | `serde + json/ron` or `rusqlite` |
+| **Metadata Parsing** | `TBD` |
+| **File Management**  | `std::fs` |
+| **GUI**             | `nannou` |
+| **Visual Effects**  | `nannou` |
+| **Storage**         | `TBD` |
 
 ---
