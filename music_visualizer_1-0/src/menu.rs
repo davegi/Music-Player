@@ -17,15 +17,21 @@ use nannou::prelude::*;
 /// - Button layout and rendering
 /// - Mouse interaction handling
 /// - Visual feedback
+///
+
+pub struct MenuButton {
+    title: String,
+    tag: String,
+    rect: Rect,
+}
+
 pub struct Menu {
     /// Current playback state (true when audio is playing)
     is_playing: bool,
-    /// Rectangle defining the play/pause button bounds
-    play_button_rect: Rect,
     /// Rectangle defining the entire menu area
     menu_rect: Rect,
     /// Collection of all interactive buttons
-    buttons: Vec<Rect>,
+    buttons: Vec<MenuButton>,
     /// Tracks mouse state from previous frame for click detection
     was_mouse_pressed: bool,
     pub music_library: MusicLibrary,
@@ -42,22 +48,11 @@ impl Menu {
     /// - Button takes up 80% of menu width
     /// - Positioned 30% down from top of menu
     pub fn new(menu_rect: Rect) -> Self {
-        let button_height = 50.0;
-        let button_width = menu_rect.w() * 0.8;
-
-        let play_button = Rect::from_x_y_w_h(
-            menu_rect.x(),
-            menu_rect.y() + menu_rect.h() * 0.3,
-            button_width,
-            button_height,
-        );
-
         Menu {
             is_playing: false,
             music_library: MusicLibrary::new(),
-            play_button_rect: play_button,
             menu_rect,
-            buttons: vec![play_button],
+            buttons: vec![],
             was_mouse_pressed: false,
         }
     }
@@ -78,7 +73,7 @@ impl Menu {
         // Only trigger on new presses, not while holding
         if is_mouse_pressed && !self.was_mouse_pressed {
             for (i, button) in self.buttons.iter().enumerate() {
-                if button.contains(mouse) {
+                if button.rect.contains(mouse) {
                     match i {
                         0 => self.is_playing = !self.is_playing,
                         _ => {}
@@ -119,14 +114,16 @@ impl Menu {
         // Draw buttons with state-dependent color
         let button_color = if self.is_playing { GREEN } else { RED };
 
+        let play_button = self.get_button("play_button");
+
         draw.rect()
-            .xy(self.play_button_rect.xy())
-            .wh(self.play_button_rect.wh())
+            .xy(play_button.unwrap().rect.xy())
+            .wh(play_button.unwrap().rect.wh())
             .color(button_color);
 
         // Draw button text
         draw.text(if self.is_playing { "PAUSE" } else { "PLAY" })
-            .xy(self.play_button_rect.xy())
+            .xy(play_button.unwrap().rect.xy())
             .color(BLACK)
             .font_size(24);
 
@@ -153,6 +150,55 @@ impl Menu {
             .color(WHITE)
             .font_size(30);
     }
+
+    fn get_button(&self, tag: &str) -> Option<&MenuButton> {
+        self.buttons.iter().find(|b| b.tag == tag)
+    }
+
+    // fn create_buttons(&mut self, menu_rect: Rect) -> Vec<MenuButton> {
+    //     let mut buttons = Vec::new();
+
+    //     let button_height = 50.0;
+    //     let button_width = menu_rect.w() * 0.8;
+
+    //     let play_button = Rect::from_x_y_w_h(
+    //         menu_rect.x(),
+    //         menu_rect.y() + menu_rect.h() * 0.3,
+    //         button_width,
+    //         button_height,
+    //     );
+
+    //     buttons.push(MenuButton {
+    //         title: "PLAY".to_string(),
+    //         tag: "play_button".to_string(),
+    //         rect: play_button,
+    //     });
+
+    //     for button in Self::create_song_buttons(&self) {
+    //         buttons.push(button);
+    //     }
+
+    //     buttons
+    // }
+
+    // fn create_song_buttons(&self) {
+    //     let mut buttons = Vec::new();
+    //     for (index, name) in self.music_library.get_song_names().iter().enumerate() {
+    //         let button_rect = Rect::from_x_y_w_h(
+    //             self.menu_rect.x(),
+    //             self.menu_rect.top() - (100.0 + (100.0 * index as f32)),
+    //             self.menu_rect.w(),
+    //             50.0,
+    //         );
+    //         buttons.push(MenuButton {
+    //             title: name.clone(),
+    //             tag: format!("song_{}", index),
+    //             rect: button_rect,
+    //         });
+    //     }
+
+    //     self.buttons = buttons;
+    // }
 
     /// Returns current playback state
     ///
