@@ -7,7 +7,7 @@
 //!
 //! Handles layout, updates, and rendering of the complete application.
 
-use crate::{menu::Menu, song::Song, view::View};
+use crate::{menu::Menu, view::View};
 use nannou::prelude::*;
 
 /// Main application controller that orchestrates all components
@@ -21,8 +21,6 @@ pub struct Controller {
     view: View,
     /// Manages the user interface and controls
     menu: Menu,
-    /// Handles audio playback and state
-    song: Song,
     /// Stores the main window dimensions
     window_rect: Rect,
 }
@@ -56,7 +54,6 @@ impl Controller {
         Controller {
             view: View::new(view_rect),
             menu: Menu::new(menu_rect),
-            song: Song::new(),
             window_rect: win_rect,
         }
     }
@@ -72,8 +69,12 @@ impl Controller {
     /// * `app` - Reference to the Nannou application for input handling
     pub fn update(&mut self, app: &App) {
         self.menu.update(app);
-        self.song.update(self.menu.is_playing());
-        self.view.update(self.song.is_playing());
+        self.menu
+            .music_library
+            .selected_song
+            .update(self.menu.is_playing());
+        self.view
+            .update(self.menu.music_library.selected_song.is_playing());
     }
 
     /// Renders all application components
@@ -107,7 +108,7 @@ impl Controller {
                 self.window_rect.right() - 200.0,
                 self.window_rect.bottom(),
             ))
-            .color(WHITE)
+            .color(BLACK)
             .weight(1.0);
 
         draw.to_frame(app, &frame).unwrap();

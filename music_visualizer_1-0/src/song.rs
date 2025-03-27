@@ -11,6 +11,8 @@ use std::sync::{Arc, Mutex};
 ///
 /// Manages the audio playback state, current position in the song,
 /// and the underlying CPAL audio stream. Provides simple play/pause controls.
+///
+
 pub struct Song {
     /// Current playback state (true if playing)
     is_playing: bool,
@@ -20,22 +22,15 @@ pub struct Song {
     audio_data: Arc<Mutex<Vec<f32>>>,
     /// Current playback position in samples
     current_frame: usize,
+    pub title: String,
+    pub filename: String,
 }
 
 impl Song {
-    /// Creates a new Song instance with default audio file
-    ///
-    /// # Panics
-    /// Doesn't panic but will create empty audio data if file loading fails
-    ///
-    /// # Examples
-    /// ```
-    /// let song = Song::new();
-    /// ```
-    pub fn new() -> Self {
-        // Load a default song
-        let song_path = "music_library/charleston-girl-live.wav";
-        let audio_data = match Self::load_wav(song_path) {
+    /// Creates a new Song instance from file
+    pub fn from_file(song_file_name: &str) -> Self {
+        let song_path = format!("music_library/{}", song_file_name);
+        let audio_data = match Self::load_wav(&song_path) {
             Ok(data) => Arc::new(Mutex::new(data)),
             Err(e) => {
                 eprintln!("Failed to load audio file: {}", e);
@@ -48,6 +43,20 @@ impl Song {
             audio_stream: None,
             audio_data,
             current_frame: 0,
+            title: Self::parse_title(song_file_name),
+            filename: song_file_name.to_string(),
+        }
+    }
+
+    /// Creates an empty Song instance
+    pub fn empty() -> Self {
+        Song {
+            is_playing: false,
+            audio_stream: None,
+            audio_data: Arc::new(Mutex::new(Vec::new())),
+            current_frame: 0,
+            title: "".to_string(),
+            filename: "".to_string(),
         }
     }
 
@@ -132,6 +141,27 @@ impl Song {
         if let Some(stream) = self.audio_stream.take() {
             drop(stream); // This will stop the stream
         }
+    }
+
+    pub fn parse_title(song_file_name: &str) -> String {
+        // Remove the file extension if present
+        let mut title = song_file_name.to_string();
+        if let Some(index) = title.rfind('.') {
+            title.truncate(index);
+        }
+
+        // Replace hyphens with spaces and capitalize each word
+        title
+            .split('-')
+            .map(|word| {
+                let mut chars = word.chars();
+                match chars.next() {
+                    None => String::new(),
+                    Some(c) => c.to_uppercase().collect::<String>() + chars.as_str(),
+                }
+            })
+            .collect::<Vec<String>>()
+            .join(" ")
     }
 
     /// Loads audio samples from WAV file

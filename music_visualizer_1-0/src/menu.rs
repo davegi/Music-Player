@@ -7,6 +7,7 @@
 //!
 //! The menu provides visual feedback and translates user input into playback commands.
 
+use crate::music_library::MusicLibrary;
 use nannou::prelude::*;
 
 /// Represents the interactive control menu
@@ -20,13 +21,14 @@ pub struct Menu {
     /// Current playback state (true when audio is playing)
     is_playing: bool,
     /// Rectangle defining the play/pause button bounds
-    play_button: Rect,
+    play_button_rect: Rect,
     /// Rectangle defining the entire menu area
     menu_rect: Rect,
     /// Collection of all interactive buttons
     buttons: Vec<Rect>,
     /// Tracks mouse state from previous frame for click detection
     was_mouse_pressed: bool,
+    pub music_library: MusicLibrary,
 }
 
 impl Menu {
@@ -52,7 +54,8 @@ impl Menu {
 
         Menu {
             is_playing: false,
-            play_button,
+            music_library: MusicLibrary::new(),
+            play_button_rect: play_button,
             menu_rect,
             buttons: vec![play_button],
             was_mouse_pressed: false,
@@ -105,22 +108,47 @@ impl Menu {
             .wh(self.menu_rect.wh())
             .color(rgb(0.1, 0.1, 0.1));
 
+        if self.music_library.has_selected_song() {
+            self.draw_playback_controls(draw);
+        } else {
+            self.draw_song_selection_controls(draw);
+        }
+    }
+
+    fn draw_playback_controls(&self, draw: &Draw) {
         // Draw buttons with state-dependent color
         let button_color = if self.is_playing { GREEN } else { RED };
 
         draw.rect()
-            .xy(self.play_button.xy())
-            .wh(self.play_button.wh())
+            .xy(self.play_button_rect.xy())
+            .wh(self.play_button_rect.wh())
             .color(button_color);
 
         // Draw button text
         draw.text(if self.is_playing { "PAUSE" } else { "PLAY" })
-            .xy(self.play_button.xy())
+            .xy(self.play_button_rect.xy())
             .color(BLACK)
             .font_size(24);
 
         // Draw menu title
         draw.text("CONTROLS")
+            .xy(pt2(self.menu_rect.x(), self.menu_rect.top() - 30.0))
+            .color(WHITE)
+            .font_size(30);
+    }
+
+    fn draw_song_selection_controls(&self, draw: &Draw) {
+        for (index, name) in self.music_library.get_song_names().iter().enumerate() {
+            draw.text(&name)
+                .xy(pt2(
+                    self.menu_rect.x(),
+                    self.menu_rect.top() - (150.0 + (100.0 * index as f32)),
+                ))
+                .color(WHITE)
+                .font_size(30);
+        }
+        // Draw menu title
+        draw.text("SONG SELECTION")
             .xy(pt2(self.menu_rect.x(), self.menu_rect.top() - 30.0))
             .color(WHITE)
             .font_size(30);

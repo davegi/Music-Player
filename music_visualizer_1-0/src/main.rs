@@ -12,6 +12,7 @@
 mod controller;
 /// Module containing the menu UI and interaction logic
 mod menu;
+mod music_library;
 /// Module handling audio playback and song management
 mod song;
 /// Module responsible for visual rendering
