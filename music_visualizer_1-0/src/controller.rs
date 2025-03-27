@@ -95,7 +95,7 @@ impl Controller {
         draw.background().color(BLACK);
 
         // Draw view and menu
-        self.view.draw(&draw);
+        self.view.draw(&draw); //TODO: Rename (maybe canvas)
         self.menu.draw(&draw);
 
         // Draw divider line between view and menu

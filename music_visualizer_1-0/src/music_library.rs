@@ -37,7 +37,7 @@ impl MusicLibrary {
         MusicLibrary {
             songs: load_library(), // Load all songs from directory
             // Set default selected song (using a popular track as example)
-            selected_song: Song::empty(),
+            selected_song: Song::from_file("charleston-girl-live.wav"),
             // Song::from_file("charleston-girl-live.wav")
         }
     }

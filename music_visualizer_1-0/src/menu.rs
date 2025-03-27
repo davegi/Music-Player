@@ -52,7 +52,16 @@ impl Menu {
             is_playing: false,
             music_library: MusicLibrary::new(),
             menu_rect,
-            buttons: vec![],
+            buttons: vec![MenuButton {
+                title: "PLAY".to_string(),
+                tag: "play_button".to_string(),
+                rect: Rect::from_x_y_w_h(
+                    menu_rect.x(),
+                    menu_rect.y() + menu_rect.h() * 0.3,
+                    menu_rect.w() * 0.8,
+                    50.0,
+                ),
+            }],
             was_mouse_pressed: false,
         }
     }

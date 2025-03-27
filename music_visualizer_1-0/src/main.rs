@@ -8,6 +8,12 @@
 //! - View managing the visual display
 //! - Model (this file) maintaining application state
 
+//Lesson summary - 3/27/25:
+// - Focus on visuals keep playback controls simple
+// - work on music library code later only load one song at a time work on song processing
+// - rename song and edit song.rs to be stronger and a better model
+// - use idvf file types to load .wav files
+
 /// Module containing the controller logic for managing application state
 mod controller;
 /// Module containing the menu UI and interaction logic
